@@ -20,7 +20,7 @@ exports.run = function(argv, cli) {
   var specified = argv.files;
   var pattern = fis.media().get('project.files');
 
-  if (specified && specified !== '::package') {
+  if (specified && typeof specified === 'string' && specified !== '::package') {
     pattern = specified.split(/\s*,\s*/);
   }
 
@@ -45,7 +45,7 @@ exports.run = function(argv, cli) {
   }
 
   function output(entry, data) {
-    var str = '\n δ '.bold.yellow;
+    var str = '\n ~ '.bold.yellow;
     var flag = false;
 
     str += entry + '\n';
@@ -54,14 +54,14 @@ exports.run = function(argv, cli) {
       if (/^__(.*)Index$/.test(key) && RegExp.$1.substr(-1) !== 'F') {
         var propKey = RegExp.$1;
         flag = true;
-        str += ' -- ' + propKey + ' ' + inspect(data[propKey]) + ' `' + matches[data[key]].raw + '`   (' + data[key] + 'th)\n';
+        str += ' -- ' + propKey + ' ' + inspect(data[propKey]) + ' `' + (matches[data[key]].raw + '').blue + '`   (' + data[key] + 'th)\n';
       }
     });
 
     if (!flag) {
       str += ' -- empty';
     }
-    console.log(str + '\n');
+    console.log(str);
   }
 
   Object.keys(files).forEach(function(subpath) {
