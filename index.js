@@ -71,6 +71,6 @@ exports.run = function(argv, cli) {
   });
 
 
-  var packager = _.applyMatches('::package', matches, ['prepackager', 'packager', 'spriter', 'postpackager']);
-  output('::package', packager);
+  var packager = _.applyMatches('::packager', matches, ['prepackager', 'packager', 'spriter', 'postpackager']);
+  output('::packager', packager);
 };
