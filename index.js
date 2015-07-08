@@ -30,18 +30,31 @@ exports.run = function(argv, cli) {
 
   function inspect(value) {
     if (Array.isArray(value)) {
-      return '[' + value.map(function(value) {
+      return '[' + value.map(function(value, _index) {
         if (value && value.__plugin) {
           return ('[plugin `' + value.__plugin + '`]').cyan;
+        } else if (fis.util.is(value, 'Function')) {
+          return funcToString(value, _index);
         }
-
         return value;
       }).join(', ') + ']';
     } else if (value && value.__plugin) {
-      return ('[plugin `' + value.__plugin + '`]').cyan;
+      return ('[plugin `' + funcToString(value.__plugin) + '`]').cyan;
+    } else if (fis.util.is(value, 'Function')) {
+      return funcToString(value);
     }
 
     return value;
+  }
+  function funcToString(fn, _index) {
+    if (!fis.util.is(fn, 'Function')) {
+      return fn;
+    }
+    var match = fn.toString().match(/^function\s*(\w+)?\s*\(([, \w]*)\)/);
+    if (match) {
+      return 'function'+ RegExp.$1 +' (' + RegExp.$2 + ') { ... }'
+    }
+    return fn;
   }
 
   function output(entry, data) {
@@ -71,6 +84,6 @@ exports.run = function(argv, cli) {
   });
 
 
-  var packager = _.applyMatches('::packager', matches, ['prepackager', 'packager', 'spriter', 'postpackager']);
-  output('::packager', packager);
+  var packager = _.applyMatches('::package', matches, ['prepackager', 'packager', 'spriter', 'postpackager']);
+  output('::package', packager);
 };
