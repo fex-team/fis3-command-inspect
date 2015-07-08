@@ -1,6 +1,6 @@
 {
   "name": "fis3-command-inspect",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "fis3 inspect the results of fis.match",
   "main": "index.js",
   "scripts": {
