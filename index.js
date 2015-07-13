@@ -52,7 +52,7 @@ exports.run = function(argv, cli) {
     }
     var match = fn.toString().match(/^function\s*(\w+)?\s*\(([, \w]*)\)/);
     if (match) {
-      return 'function'+ RegExp.$1 +' (' + RegExp.$2 + ') { ... }'
+      return 'function '+ RegExp.$1 +' (' + RegExp.$2 + ') { ... }'
     }
     return fn;
   }
