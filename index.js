@@ -1,13 +1,15 @@
+var checkPlugins = require('./checkPlugins');
+
 var _ = fis.util;
 
 exports.name = 'inspect [media name]';
 exports.desc = 'inspect the result of fis.match ';
 exports.options = {
   '-h, --help': 'print this help message',
-  '--files'   : 'specify files to be inspected.'
+  '--files': 'specify files to be inspected.',
 };
 
-exports.run = function(argv, cli) {
+exports.run = function (argv, cli) {
   if (argv.h || argv.help) {
     return cli.help(exports.name, exports.options);
   }
@@ -27,10 +29,24 @@ exports.run = function(argv, cli) {
   var files = fis.project.getSourceByPatterns(pattern);
   var stream = process.stdout;
   var matches = fis.media().getSortedMatches();
+  var plugins = [];
+
+  function inspectPlugin(prop, value) {
+    if (!Array.isArray(value)) {
+      value = [value];
+    }
+    value.forEach(function (value, _index) {
+      if (value && value.__plugin && typeof value.__plugin == 'string') {
+        plugins.push([prop, value.__plugin])
+      }
+    });
+  }
+
+
 
   function inspect(value) {
     if (Array.isArray(value)) {
-      return '[' + value.map(function(value, _index) {
+      return '[' + value.map(function (value, _index) {
         if (value && value.__plugin) {
           return ('[plugin `' + value.__plugin + '`]').cyan;
         } else if (fis.util.is(value, 'Function')) {
@@ -46,13 +62,14 @@ exports.run = function(argv, cli) {
 
     return value;
   }
+
   function funcToString(fn, _index) {
     if (!fis.util.is(fn, 'Function')) {
       return fn;
     }
     var match = fn.toString().match(/^function\s*(\w+)?\s*\(([, \w]*)\)/);
     if (match) {
-      return 'function '+ RegExp.$1 +' (' + RegExp.$2 + ') { ... }'
+      return 'function ' + RegExp.$1 + ' (' + RegExp.$2 + ') { ... }'
     }
     return fn;
   }
@@ -63,10 +80,11 @@ exports.run = function(argv, cli) {
 
     str += entry + '\n';
 
-    Object.keys(data).forEach(function(key) {
+    Object.keys(data).forEach(function (key) {
       if (/^__(.*)Index$/.test(key) && RegExp.$1.substr(-1) !== 'F') {
         var propKey = RegExp.$1;
         flag = true;
+        inspectPlugin(propKey, data[propKey]);
         str += ' -- ' + propKey + ' ' + inspect(data[propKey]) + ' `' + (matches[data[key]].raw + '').blue + '`   (' + data[key] + 'th)\n';
       }
     });
@@ -77,7 +95,7 @@ exports.run = function(argv, cli) {
     console.log(str);
   }
 
-  Object.keys(files).forEach(function(subpath) {
+  Object.keys(files).forEach(function (subpath) {
     var file = files[subpath];
 
     output(file.subpath, file);
@@ -86,4 +104,8 @@ exports.run = function(argv, cli) {
 
   var packager = _.applyMatches('::package', matches, ['prepackager', 'packager', 'spriter', 'postpackager']);
   output('::package', packager);
+
+  console.log('\n ~ '.bold.yellow + ' plugin check');
+  
+  checkPlugins.outputPluginInfo(plugins);
 };
